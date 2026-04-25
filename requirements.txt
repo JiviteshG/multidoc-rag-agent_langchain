@@ -10,3 +10,4 @@ langchain-community
 langchain_openai
 sentence-transformers
 torchvision
+langchain
