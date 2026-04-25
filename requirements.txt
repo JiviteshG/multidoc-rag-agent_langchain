@@ -9,3 +9,4 @@ langchain-text-splitters
 langchain-community
 langchain_openai
 sentence-transformers
+torchvision
