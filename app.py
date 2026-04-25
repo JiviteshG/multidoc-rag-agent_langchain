@@ -3,8 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 import os
 from PyPDF2 import PdfReader
-from langchain.text_splitter import CharacterTextSplitter
-
+from langchain_text_splitters import CharacterTextSplitter
 
 def get_pdf_text(pdf_docs):
     text = ""
