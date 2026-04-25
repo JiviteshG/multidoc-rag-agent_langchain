@@ -14,7 +14,7 @@ def main():
 
     with st.sidebar:
         st.subheader("Your documents")
-        st.file_uploader("Upload your documents here and click on Process", type=["pdf", "txt"], key="file_uploader")
+        pdf_docs = st.file_uploader("Upload your documents here and click on Process", type=["pdf", "txt"], accept_multiple_files=True)
         st.button("Process") #, on_click=process_documents)
 
 
