@@ -5,3 +5,4 @@ openai
 huggingface_hub
 pypdf2
 faiss-cpu
+langchain-text-splitters
