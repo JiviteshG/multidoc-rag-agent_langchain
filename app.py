@@ -75,6 +75,13 @@ def get_conversation_chain(vectorstore):
     return conversation_chain
 
 
+def handle_user_input(user_question):
+    response = st.session_state.conversation({"question": user_question})
+    st.write(response)
+
+
+
+
 def main():
     load_dotenv()  # Load environment variables from .env file
     st.set_page_config(page_title="MultiDoc RAG Agent", page_icon=":books:")
@@ -88,7 +95,9 @@ def main():
     st.header("MultiDoc RAG Agent with LangChain and Streamlit :books:")
     st.title("MultiDoc RAG Agent")
 
-    st.text_input("Enter your question here:", key="user_input")
+    user_question = st.text_input("Enter your question here:")
+    if user_question:
+        handle_user_input(user_question)
 
     st.write(user_template.replace("{{MSG}}", "Hello Bot"), unsafe_allow_html=True)
     st.write(bot_template.replace("{{MSG}}", "Hello Human"), unsafe_allow_html=True)
