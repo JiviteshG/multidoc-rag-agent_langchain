@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import os
 from PyPDF2 import PdfReader
 from langchain_text_splitters import CharacterTextSplitter
+from langchain_community.vectorstores import FAISS # vectore db stores locally instead of cloud
+from langchain_openai import OpenAIEmbeddings
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -26,6 +28,10 @@ def get_text_chunks(raw_text):
     chunks = text_splitter.split_text(raw_text)
     return chunks
 
+def get_vectorstore(text_chunks):
+    embeddings = OpenAIEmbeddings() # create embeddings for text chunks
+    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings) # create vector store from text chunks and embeddings
+    return vectorstore
 
 def main():
     load_dotenv()  # Load environment variables from .env file
@@ -45,9 +51,11 @@ def main():
                 
                 # get text chunks
                 text_chunks =  get_text_chunks(raw_text)
-                st.write(text_chunks)
+                
                 # create vector store
-
+                vectorstore = get_vectorstore(text_chunks)
+                st.write("Files processed successfully!")
+                st.write(vectorstore)
 
 
 if __name__ == '__main__':
