@@ -30,26 +30,31 @@ A Retrieval-Augmented Generation (RAG) conversational application that allows yo
    
 2. **Create and activate a virtual environment (recommended):**
    ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
+   python -m venv venv
+   # On macOS/Linux:
+   source venv/bin/activate  
+   # On Windows:
+   venv\Scripts\activate
+   ```
 
 3. **Install the dependencies:**
    ```bash
-pip install -r requirements.txt
-    ```
+   pip install -r requirements.txt
+   ```
+   
 4. **Set up Environment Variables:**
 Create a .env file in the root of the project and securely store your API keys:
    ```
-Code snippet
-OPENAI_API_KEY=your_openai_api_key_here
-# HUGGINGFACEHUB_API_TOKEN=your_huggingface_token_here (if applicable)
-```
+   Code snippet
+   OPENAI_API_KEY=your_openai_api_key_here
+   # HUGGINGFACEHUB_API_TOKEN=your_huggingface_token_here (if applicable)
+   ```
   
 **💻 Usage**
 1. Start the application by running:
    ```bash
-streamlit run app.py
+   streamlit run app.py
+
 2. The application will launch in your default web browser.
 
 3. Use the sidebar to Upload your PDF documents.
