@@ -64,17 +64,23 @@ Create a .env file in the root of the project and securely store your API keys:
 5. Once processing is complete, use the text input at the bottom to start asking questions about your documents!
 
 📁 Repository Structure
-Plaintext
+
 📦 multidoc-rag-agent_langchain/
+
 ├── app.py               # Main Streamlit application and logic
+
 ├── htmlTemplates.py     # HTML/CSS UI components for user & bot messages
+
 ├── requirements.txt     # List of project dependencies
+
 ├── README.md            # Project documentation
+
 ├── .gitignore           # Ignored files for version control
+
 └── .python-version      # Specifies the Python version used
 
-🤝 Contributing
+### 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
 
-📜 License
+### 📜 License
 This project is open-source and available under the MIT License.
