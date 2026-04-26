@@ -12,3 +12,4 @@ sentence-transformers
 torchvision
 langchain
 langchain-core
+langchain-openai
