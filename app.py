@@ -135,7 +135,7 @@ def main():
     if "chain" not in st.session_state:
         st.session_state.chain = None
 
-    query = st.text_input("Ask a question")
+    query = st.text_input("Ask a question, please")
 
     if query:
         if st.session_state.chain:
@@ -155,7 +155,7 @@ def main():
 
                 st.session_state.chain = build_rag_chain(vectorstore)
 
-                st.success("Ready for questions.")
+                st.success("Ready for answering questions.")
 
 
 if __name__ == "__main__":
