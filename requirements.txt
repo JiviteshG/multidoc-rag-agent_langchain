@@ -12,3 +12,5 @@ torchvision
 langchain
 langchain-core
 langchain-openai
+ragas
+datasets
