@@ -95,6 +95,22 @@ The system was evaluated using the **Ragas** framework against a "Golden Dataset
 ### Key Results:
 - **Faithfulness (1.00):** The model demonstrated zero hallucinations, with all answers being 100% supported by the source documents.
 - **Answer Relevancy (0.96):** The model provides highly relevant answers that directly address the user's query.
+
+## 📊 Evaluation Results
+
+We evaluate the RAG agent using **DeepEval** to ensure high-fidelity responses and prevent hallucinations. The agent was tested against 14 synthetic test cases derived from the *Canadian Bill of Rights*.
+
+### Performance Metrics
+![DeepEval Results](evals/deepeval_evaluation_results_plot_total.png)
+
+| Metric | Score | Definition |
+| :--- | :--- | :--- |
+| **Faithfulness** | 0.98 | Measures how much of the answer is derived strictly from the PDF. |
+| **Answer Relevancy** | 1.00 | Measures how well the agent actually addressed the user's query. |
+
+Detailed breakdown can be found in [evals/deepeval_evaluation_results_plot.png](evals/deepeval_evaluation_results_plot.png).
+Detailed breakdown can be found in [evals/deepeval_results_gpt 5.4.csv](evals/deepeval_results_gpt 5.4.csv).
+
 ### 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
 
