@@ -13,7 +13,9 @@ A Retrieval-Augmented Generation (RAG) conversational application that allows yo
 - **[Streamlit](https://streamlit.io/):** For building the front-end chat interface.
 - **Embeddings & Vector Store:** Used to convert text into vector embeddings and store them for fast semantic search (typically FAISS or ChromaDB).
 - **LLM Integration:** Compatible with models like OpenAI GPT or HuggingFace alternatives.
-
+- **[Ragas](https://www.ragas.io/):** Automatic metrics that helps you understand the performance and robustness of your LLM application.
+- **[DeepEval](https://deepeval.com/):** DeepEval enables teams to build reliable evaluation pipelines to test any AI system.
+  
 ## 🚀 Getting Started
 
 ### Prerequisites
