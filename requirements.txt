@@ -16,3 +16,4 @@ ragas
 datasets
 pypdf
 rapidfuzz
+deepeval
