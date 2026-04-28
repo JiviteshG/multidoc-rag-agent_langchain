@@ -90,7 +90,7 @@ Create a .env file in the root of the project and securely store your API keys:
 ## 📊 Performance Evaluation
 The system was evaluated using the **Ragas** framework against a "Golden Dataset" of legal questions derived from the Canadian Constitution and Bill of Rights.
 
-![RAG Evaluation Metrics](evals\eval_results_plot.png)
+![RAG Evaluation Metrics](evals/eval_results_plot.png)
 
 ### Key Results:
 - **Faithfulness (1.00):** The model demonstrated zero hallucinations, with all answers being 100% supported by the source documents.
