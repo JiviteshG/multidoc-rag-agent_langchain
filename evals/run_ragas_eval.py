@@ -9,6 +9,7 @@ from datasets import Dataset
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
 from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
 
 def run_evaluation():
     # 1. Point to your actual PDF files in the docs folder
@@ -41,8 +42,9 @@ def run_evaluation():
     # 3. Run Ragas
     dataset = Dataset.from_list(results)
     score = evaluate(
-        dataset,
-        metrics=[faithfulness, answer_relevancy]
+    dataset,
+    metrics=[faithfulness, answer_relevancy],
+    embeddings=OpenAIEmbeddings() # Add this line
     )
     
     print("\n--- Evaluation Results ---")
