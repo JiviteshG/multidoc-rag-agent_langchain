@@ -47,8 +47,8 @@ def run_evaluation():
         # Defined Metrics
         # Faithfulness: Did the LLM hallucinate or stick to the context?
         # Relevancy: Did the LLM actually answer the question asked?
-        f_metric = FaithfulnessMetric(threshold=0.7)
-        r_metric = AnswerRelevancyMetric(threshold=0.7)
+        f_metric = FaithfulnessMetric(threshold=0.7, model="gpt-4o-mini" ) # By default it will use gpt-5.4 (at the time of writing)
+        r_metric = AnswerRelevancyMetric(threshold=0.7, model="gpt-4o-mini") # By default it will use gpt-5.4 (at the time of writing)
         
         f_metric.measure(test_case)
         r_metric.measure(test_case)
