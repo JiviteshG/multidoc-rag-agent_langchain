@@ -79,6 +79,15 @@ Create a .env file in the root of the project and securely store your API keys:
 
 └── .python-version      # Specifies the Python version used
 
+├── evals/
+
+│   ├── eval_dataset.py       # Your golden questions
+
+│   ├── run_ragas_eval.py     # The execution Ragas script
+
+│   └── ragas_report_v1.csv   # The results of evals 
+
+
 ### 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
 
