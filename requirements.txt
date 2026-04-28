@@ -17,3 +17,4 @@ datasets
 pypdf
 rapidfuzz
 deepeval
+chromadb
