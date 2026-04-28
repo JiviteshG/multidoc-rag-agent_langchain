@@ -122,6 +122,22 @@ def handle_query(query: str):
 
 
 # =========================
+# Evals Logic
+# =========================
+def get_eval_chain(pdf_paths):
+    """Helper for Ragas evaluation to build the chain without the UI"""
+# Inside app.py
+def get_eval_chain(pdf_paths):
+    text = extract_text(pdf_paths) # 
+    chunks = split_text(text)
+    vectorstore = build_vectorstore(chunks)
+    
+    chain = build_rag_chain(vectorstore)
+    retriever = vectorstore.as_retriever()
+    
+    return chain, retriever # Return both the chain and retriever for evaluation purposes
+
+# =========================
 # Main App
 # =========================
 def main():
