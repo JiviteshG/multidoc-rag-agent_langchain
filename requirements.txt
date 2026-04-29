@@ -18,3 +18,4 @@ pypdf
 rapidfuzz
 deepeval
 chromadb
+guardrails-ai
