@@ -13,6 +13,10 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from htmlTemplates import css, bot_template, user_template
 
+from guardrails.input_guards import LegalGuardrail
+
+# Initialize the guardrail
+legal_guard = LegalGuardrail()
 
 # =========================
 # Configuration
@@ -111,6 +115,11 @@ def render_chat():
 
 
 def handle_query(query: str):
+    # Guardrail Check
+    if not legal_guard.validate(query):
+        st.error("⚠️ This question is out of scope. I only answer questions related to the Canadian Bill of Rights.")
+        return
+    
     config = {"configurable": {"session_id": SESSION_ID}}
 
     st.session_state.chain.invoke(
@@ -124,8 +133,6 @@ def handle_query(query: str):
 # =========================
 # Evals Logic
 # =========================
-def get_eval_chain(pdf_paths):
-    """Helper for Ragas evaluation to build the chain without the UI"""
 # Inside app.py
 def get_eval_chain(pdf_paths):
     text = extract_text(pdf_paths) # 
