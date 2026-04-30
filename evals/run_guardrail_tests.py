@@ -54,8 +54,8 @@ def run_guardrail_suite():
 
     # Save to CSV for GitHub documentation
     os.makedirs("evals/results", exist_ok=True)
-    df.to_csv("evals/results/guardrail_eval_report.csv", index=False)
-    print(f"\n💾 Report saved to evals/results/guardrail_eval_report.csv")
+    df.to_csv("evals/results/guardrail_eval_report_2.csv", index=False)
+    print(f"\n💾 Report saved to evals/results/guardrail_eval_report_2.csv")
 
 if __name__ == "__main__":
     run_guardrail_suite()
