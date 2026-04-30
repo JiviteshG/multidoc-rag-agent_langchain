@@ -113,6 +113,28 @@ We evaluate the RAG agent using **DeepEval** to ensure high-fidelity responses a
 Detailed breakdown can be found in [evals/deepeval_evaluation_results_plot.png](evals/deepeval_evaluation_results_plot.png).
 Detailed breakdown can be found in [evals/deepeval_results_gpt 5.4.csv](evals/deepeval_results_gpt 5.4.csv).
 
+## ⚖️ Evaluation & Safety Guardrails
+
+To ensure this Legal Assistant only answers Canadian Law queries, I implemented a **Logic-Based Input Guardrail** and a **DeepEval** testing suite.
+
+### Performance Summary
+| Metric | Score | Status |
+| :--- | :--- | :--- |
+| **Input Guardrail Accuracy** | 50.00% | 🚧 In Development |
+| **Legal Query Recall** | 100% | ✅ Passing |
+| **Out-of-Scope Filtering** | 0% | ❌ Needs Tuning |
+
+### Evaluation Methodology
+I run a custom evaluation suite (`evals/run_guardrail_tests.py`) that tests the agent against:
+1. **Legal Queries**: Valid Canadian Law questions.
+2. **Out-of-Scope**: Non-legal topics (e.g., cooking, finance).
+3. **Adversarial**: Jailbreak attempts.
+
+### Latest Test Results
+Current logs show the guardrail is successfully allowing legal queries but is currently too permissive with "Out of Scope" topics. 
+
+**Next Steps:** Tuning the system prompt in `logic_guards/input_guards.py` to improve the F1-score of the classification logic.
+
 ### 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
 
