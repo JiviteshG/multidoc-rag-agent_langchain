@@ -1,0 +1,9 @@
+services:
+  legal-rag-agent:
+    build: .
+    ports:
+      - "8501:8501"  # Maps local port 8501 to container port 8501
+    env_file:
+      - .env         # Automatically loads API keys
+    volumes:
+      - .:/app       # "Hot Reload": Changes you make to code update in the container instantly

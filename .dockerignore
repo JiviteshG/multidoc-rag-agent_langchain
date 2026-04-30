@@ -1,0 +1,6 @@
+.venv
+__pycache__
+.git
+.env
+data/vector_store/  # Only ignore if you want to rebuild it inside the container
+*.pdf               # Ignore local raw files if they are already processed
