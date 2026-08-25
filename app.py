@@ -13,7 +13,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from htmlTemplates import css, bot_template, user_template
 
-from guardrails.input_guards import LegalGuardrail
+from logic_gaurds.input_guards import LegalGuardrail
 
 # Initialize the guardrail
 legal_guard = LegalGuardrail()
