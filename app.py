@@ -90,18 +90,28 @@ def vectorstore_exists() -> bool:
 # =========================
 # RAG Chain (LCEL)
 # =========================
+def format_docs(docs: List[Document]) -> str:
+    parts = []
+    for doc in docs:
+        source = doc.metadata.get("source", "Unknown")
+        page = doc.metadata.get("page", "?")
+        parts.append(f"[Source: {source}, Page {page}]\n{doc.page_content}")
+    return "\n\n".join(parts)
+
+
 def build_rag_chain(vectorstore):
     llm = ChatOpenAI()
     retriever = vectorstore.as_retriever()
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Answer strictly using the provided context:\n\n{context}"),
+        ("system", (
+            "Answer strictly using the provided context. "
+            "At the end of your answer, on a new line, list the sources you used "
+            "in this format — Sources: <filename>, Page <n>.\n\n{context}"
+        )),
         ("placeholder", "{chat_history}"),
         ("human", "{input}"),
     ])
-
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
 
     chain = (
         {
