@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libxslt-dev \
     libmagic-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # 5. Copy requirements.txt from local folder to the container
@@ -29,5 +30,9 @@ COPY . .
 # 8. Docker port Streamlit uses
 EXPOSE 8501
 
-# 9. The command to launch app
+# 9. Health check — Streamlit exposes a built-in health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# 10. The command to launch app
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
