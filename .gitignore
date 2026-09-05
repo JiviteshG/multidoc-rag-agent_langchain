@@ -208,3 +208,6 @@ __marimo__/
 imgs/
 docs/
 .deepeval/
+
+# ChromaDB persistent store
+chroma_db/
