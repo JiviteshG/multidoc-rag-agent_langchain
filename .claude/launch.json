@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "multidoc-rag",
-      "runtimeExecutable": "C:\\Users\\gudek\\anaconda3\\Scripts\\streamlit.exe",
+      "runtimeExecutable": "C:\\Users\\gudek\\Downloads\\Projects\\multidoc-rag-agent_langchain\\venv\\Scripts\\streamlit.exe",
       "runtimeArgs": ["run", "app.py", "--server.port=8501"],
       "port": 8501,
       "url": "http://localhost:8501"

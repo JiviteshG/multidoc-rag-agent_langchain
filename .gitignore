@@ -211,3 +211,5 @@ docs/
 
 # ChromaDB persistent store
 chroma_db/
+
+MultiDoc RAG Agent.pdf
