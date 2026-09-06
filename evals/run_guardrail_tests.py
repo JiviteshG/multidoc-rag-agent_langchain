@@ -1,8 +1,7 @@
 import os
+import sys
 import pandas as pd
 from dotenv import load_dotenv
-from deepeval.test_case import LLMTestCase
-from deepeval.dataset import EvaluationDataset
 from logic_guards.input_guards import LegalGuardrail
 
 # Load environment variables (API Keys)
@@ -57,5 +56,12 @@ def run_guardrail_suite():
     df.to_csv("evals/results/guardrail_eval_report_2.csv", index=False)
     print(f"\n💾 Report saved to evals/results/guardrail_eval_report_2.csv")
 
+    all_passed = df["Correct_Decision"].all()
+    if not all_passed:
+        failed = df[~df["Correct_Decision"]][["Query", "Status"]].to_string(index=False)
+        print(f"\n❌ Some tests failed:\n{failed}")
+    return all_passed
+
 if __name__ == "__main__":
-    run_guardrail_suite()
+    all_passed = run_guardrail_suite()
+    sys.exit(0 if all_passed else 1)
