@@ -21,3 +21,6 @@ chromadb
 langchain-chroma
 guardrails-ai
 flashrank
+fastapi
+uvicorn[standard]
+langchain-classic
