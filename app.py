@@ -136,12 +136,25 @@ def build_rag_chain(vectorstore):
 # =========================
 # UI Logic
 # =========================
+def _format_bot_content(content: str) -> str:
+    """Split answer from Sources block and wrap sources in styled div."""
+    if "\nSources:" in content:
+        answer, sources = content.split("\nSources:", 1)
+        sources_html = f'<div class="sources-block">Sources:{sources}</div>'
+        return answer.strip() + sources_html
+    return content
+
+
 def render_chat():
     history = get_history(SESSION_ID).messages
 
     for msg in history:
-        template = user_template if msg.type == "human" else bot_template
-        st.write(template.replace("{{MSG}}", msg.content), unsafe_allow_html=True)
+        if msg.type == "human":
+            content = msg.content
+            st.write(user_template.replace("{{MSG}}", content), unsafe_allow_html=True)
+        else:
+            content = _format_bot_content(msg.content)
+            st.write(bot_template.replace("{{MSG}}", content), unsafe_allow_html=True)
 
 
 def handle_query(query: str):
