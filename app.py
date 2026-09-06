@@ -5,7 +5,7 @@ from PyPDF2 import PdfReader
 from typing import List
 
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.documents import Document
 
@@ -15,10 +15,11 @@ from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from htmlTemplates import css, bot_template, user_template
+from logic_guards.input_guards import LegalGuardrail
 
-from logic_gaurds.input_guards import LegalGuardrail
+# Load env vars before any LangChain/OpenAI objects are instantiated
+load_dotenv()
 
-# Initialize the guardrail
 legal_guard = LegalGuardrail()
 
 # =========================
@@ -174,8 +175,6 @@ def get_eval_chain(pdf_paths):
 # Main App
 # =========================
 def main():
-    load_dotenv()
-
     st.set_page_config(page_title="MultiDoc RAG Agent", page_icon="📚")
     st.write(css, unsafe_allow_html=True)
 

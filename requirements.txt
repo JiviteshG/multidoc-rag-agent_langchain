@@ -18,4 +18,5 @@ datasets
 rapidfuzz
 deepeval
 chromadb
+langchain-chroma
 guardrails-ai
