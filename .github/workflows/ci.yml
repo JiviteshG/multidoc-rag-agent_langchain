@@ -28,6 +28,10 @@ jobs:
           python-version: "3.13"
           cache: "pip"           # caches pip downloads between runs — speeds up reruns
 
+      # Ensure pip itself is current before installing project deps
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements.txt
 
