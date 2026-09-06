@@ -20,3 +20,4 @@ deepeval
 chromadb
 langchain-chroma
 guardrails-ai
+flashrank
