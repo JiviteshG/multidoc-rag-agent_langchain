@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from typing import List
 
+from pydantic import BaseModel, Field
+
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -163,6 +165,43 @@ def build_rag_chain(vectorstore):
         input_messages_key="input",
         history_messages_key="chat_history",
     ).with_config(run_name="multidoc-rag-query")
+
+
+# =========================
+# Structured Output
+# =========================
+class RAGResponse(BaseModel):
+    answer: str = Field(description="The answer to the question, grounded strictly in the provided context")
+    sources: List[str] = Field(description="List of sources cited, formatted as 'filename.pdf, Page N'")
+
+
+def build_structured_chain(vectorstore):
+    """Single-shot chain that returns a typed RAGResponse instead of a raw string.
+
+    Used by programmatic callers (API endpoints, evals) that need typed fields.
+    Does NOT stream — JSON must be fully formed before it can be parsed.
+    History is NOT managed here; callers own their own context window.
+    """
+    llm = ChatOpenAI().with_structured_output(RAGResponse)
+    retriever = build_retriever(vectorstore)
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "Answer strictly using the provided context. "
+            "Return your response as a structured object with an 'answer' field "
+            "and a 'sources' list (e.g. ['filename.pdf, Page 3']).\n\n{context}"
+        )),
+        ("human", "{input}"),
+    ])
+
+    return (
+        {
+            "context": lambda x: format_docs(retriever.invoke(x["input"])),
+            "input": lambda x: x["input"],
+        }
+        | prompt
+        | llm
+    ).with_config(run_name="multidoc-rag-structured")
 
 
 # =========================
