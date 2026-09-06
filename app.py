@@ -177,6 +177,7 @@ def handle_query(query: str):
     # Guardrail check
     if not legal_guard.validate(query):
         render_chat()
+        st.write(user_template.replace("{{MSG}}", query), unsafe_allow_html=True)
         st.error("⚠️ This question is out of scope. I only answer questions related to the Canadian Bill of Rights.")
         return
 
