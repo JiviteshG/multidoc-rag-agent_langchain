@@ -41,6 +41,7 @@ jobs:
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
           LANGCHAIN_TRACING_V2: "true"
           LANGCHAIN_PROJECT: "multidoc-rag-agent-ci"
+          PYTHONPATH: .        # repo root on path so logic_guards/ is importable
         run: python evals/run_guardrail_tests.py
 
       # Save the CSV report so you can download it from the Actions UI
