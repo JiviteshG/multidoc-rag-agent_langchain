@@ -14,6 +14,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
+from langchain_community.document_compressors.flashrank_rerank import FlashrankRerank
 
 from htmlTemplates import css, bot_template, user_template
 from logic_guards.input_guards import LegalGuardrail
@@ -115,9 +117,24 @@ def format_docs(docs: List[Document]) -> str:
     return "\n\n".join(parts)
 
 
+def build_retriever(vectorstore):
+    # Stage 1: fetch top-20 candidates via vector similarity (fast, coarse)
+    base_retriever = vectorstore.as_retriever(search_kwargs={"k": 20})
+
+    # Stage 2: rerank those 20 with a cross-encoder, keep the top 5 (precise)
+    # FlashRank runs locally — no API key required.
+    # Cross-encoder reads query + chunk together, unlike embeddings which score them apart.
+    compressor = FlashrankRerank(top_n=5)
+
+    return ContextualCompressionRetriever(
+        base_compressor=compressor,
+        base_retriever=base_retriever,
+    )
+
+
 def build_rag_chain(vectorstore):
     llm = ChatOpenAI()
-    retriever = vectorstore.as_retriever()
+    retriever = build_retriever(vectorstore)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", (
@@ -196,7 +213,7 @@ def get_eval_chain(pdf_paths):
     chunks = split_documents(docs)
     vectorstore = build_vectorstore(chunks)
     chain = build_rag_chain(vectorstore)
-    retriever = vectorstore.as_retriever()
+    retriever = build_retriever(vectorstore)
     return chain, retriever
 
 
