@@ -183,10 +183,13 @@ def main():
     if "chain" not in st.session_state:
         st.session_state.chain = None
 
-    # Auto-load persisted vector store on startup
+    # Auto-load persisted vector store on startup (skip silently if store is corrupt)
     if st.session_state.chain is None and vectorstore_exists():
-        vectorstore = load_vectorstore()
-        st.session_state.chain = build_rag_chain(vectorstore)
+        try:
+            vectorstore = load_vectorstore()
+            st.session_state.chain = build_rag_chain(vectorstore)
+        except Exception:
+            pass
 
     query = st.text_input("Ask a question, please")
 
