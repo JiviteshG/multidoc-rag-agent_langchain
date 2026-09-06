@@ -1,4 +1,5 @@
 import os
+import re
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -88,6 +89,20 @@ def vectorstore_exists() -> bool:
     return os.path.exists(CHROMA_PERSIST_DIR) and bool(os.listdir(CHROMA_PERSIST_DIR))
 
 
+def get_stored_document_names() -> List[str]:
+    if not vectorstore_exists():
+        return []
+    try:
+        vs = load_vectorstore()
+        result = vs._collection.get(include=["metadatas"])
+        sources = sorted(set(
+            m.get("source", "") for m in result["metadatas"] if m.get("source")
+        ))
+        return sources
+    except Exception:
+        return []
+
+
 # =========================
 # RAG Chain (LCEL)
 # =========================
@@ -137,11 +152,12 @@ def build_rag_chain(vectorstore):
 # UI Logic
 # =========================
 def _format_bot_content(content: str) -> str:
-    """Split answer from Sources block and wrap sources in styled div."""
-    if "\nSources:" in content:
-        answer, sources = content.split("\nSources:", 1)
-        sources_html = f'<div class="sources-block">Sources:{sources}</div>'
-        return answer.strip() + sources_html
+    # Handles both "Source:" (singular) and "Sources:" (plural) from the LLM
+    match = re.search(r'\n(Sources?:)', content)
+    if match:
+        answer = content[:match.start()].strip()
+        sources_text = content[match.start(1):]
+        return answer + f'<div class="sources-block">{sources_text}</div>'
     return content
 
 
@@ -158,17 +174,15 @@ def render_chat():
 
 
 def handle_query(query: str):
-    # Guardrail Check
+    # Guardrail check
     if not legal_guard.validate(query):
+        render_chat()
         st.error("⚠️ This question is out of scope. I only answer questions related to the Canadian Bill of Rights.")
         return
-    
-    config = {"configurable": {"session_id": SESSION_ID}}
 
-    st.session_state.chain.invoke(
-        {"input": query},
-        config=config
-    )
+    config = {"configurable": {"session_id": SESSION_ID}}
+    with st.spinner("Thinking..."):
+        st.session_state.chain.invoke({"input": query}, config=config)
 
     render_chat()
 
@@ -183,6 +197,7 @@ def get_eval_chain(pdf_paths):
     chain = build_rag_chain(vectorstore)
     retriever = vectorstore.as_retriever()
     return chain, retriever
+
 
 # =========================
 # Main App
@@ -204,25 +219,46 @@ def main():
         except Exception:
             pass
 
-    query = st.text_input("Ask a question, please")
+    # Populate knowledge base list once per session (refresh after processing)
+    if "kb_documents" not in st.session_state:
+        st.session_state.kb_documents = get_stored_document_names()
+
+    with st.sidebar:
+        st.subheader("Documents")
+
+        # Knowledge base status box
+        if st.session_state.kb_documents:
+            with st.expander("📚 Knowledge Base", expanded=True):
+                for doc in st.session_state.kb_documents:
+                    st.markdown(f"✅ **{doc}**")
+            st.markdown("---")
+
+        files = st.file_uploader("Upload PDFs", accept_multiple_files=True)
+
+        if st.button("Process"):
+            if not files:
+                st.warning("Please upload at least one PDF first.")
+            else:
+                with st.spinner("Building knowledge base..."):
+                    docs = extract_documents(files)
+                    chunks = split_documents(docs)
+                    vectorstore = build_vectorstore(chunks)
+                    st.session_state.chain = build_rag_chain(vectorstore)
+                    st.session_state.kb_documents = get_stored_document_names()
+                st.success(f"Ready! Processed {len(files)} file(s).")
+                st.rerun()
+
+    # Chat input (sticks to bottom, auto-clears after submit)
+    query = st.chat_input("Ask a question...")
 
     if query:
         if st.session_state.chain:
             handle_query(query)
         else:
+            render_chat()
             st.warning("Upload and process documents first.")
-
-    with st.sidebar:
-        st.subheader("Documents")
-        files = st.file_uploader("Upload PDFs", accept_multiple_files=True)
-
-        if st.button("Process"):
-            with st.spinner("Building knowledge base..."):
-                docs = extract_documents(files)
-                chunks = split_documents(docs)
-                vectorstore = build_vectorstore(chunks)
-                st.session_state.chain = build_rag_chain(vectorstore)
-                st.success("Ready for answering questions.")
+    else:
+        render_chat()
 
 
 if __name__ == "__main__":
