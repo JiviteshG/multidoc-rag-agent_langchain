@@ -190,6 +190,22 @@ def render_chat():
             st.write(bot_template.replace("{{MSG}}", content), unsafe_allow_html=True)
 
 
+def stream_response(query: str):
+    """Generator that yields text chunks from the chain stream.
+
+    RunnableWithMessageHistory.stream() yields the inner chain's output chunks.
+    Since the chain ends with StrOutputParser(), each chunk is a plain string.
+    We guard against AIMessageChunk objects in case the parser is bypassed.
+    History is auto-saved by RunnableWithMessageHistory once the stream is exhausted.
+    """
+    config = {"configurable": {"session_id": SESSION_ID}}
+    for chunk in st.session_state.chain.stream({"input": query}, config=config):
+        if isinstance(chunk, str):
+            yield chunk
+        elif hasattr(chunk, "content"):
+            yield chunk.content
+
+
 def handle_query(query: str):
     # Guardrail check
     if not legal_guard.validate(query):
@@ -198,11 +214,24 @@ def handle_query(query: str):
         st.error("⚠️ This question is out of scope. I only answer questions related to the Canadian Bill of Rights.")
         return
 
-    config = {"configurable": {"session_id": SESSION_ID}}
-    with st.spinner("Thinking..."):
-        st.session_state.chain.invoke({"input": query}, config=config)
-
+    # Show existing history, then the new user message
     render_chat()
+    st.write(user_template.replace("{{MSG}}", query), unsafe_allow_html=True)
+
+    # Stream the bot response token-by-token.
+    # st.write_stream() renders chunks as they arrive and returns the full text.
+    # Retrieval (ChromaDB + reranker) runs first — blocking — then LLM streams.
+    with st.spinner("Retrieving..."):
+        gen = stream_response(query)
+        first_chunk = next(gen, None)   # blocks until retrieval + first token ready
+
+    if first_chunk is not None:
+        def _full_stream():
+            yield first_chunk
+            yield from gen
+
+        with st.chat_message("assistant"):
+            st.write_stream(_full_stream())
 
 
 # =========================
