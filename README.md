@@ -174,6 +174,17 @@ Evaluated against a golden dataset of Canadian Bill of Rights questions.
 
 ![DeepEval Results](evals/deepeval_evaluation_results_plot_total.png)
 
+### Unit Tests (23 test cases — no LLM calls, ~30s)
+
+```bash
+pytest tests/ -v
+```
+
+| Test Module | Coverage |
+| :--- | :--- |
+| `test_app.py` | `split_documents`, `_format_bot_content`, `RAGResponse`, `vectorstore_exists` |
+| `test_api.py` | `/health`, `/query` (mocked chain), guardrail rejection, schema validation |
+
 ### Guardrail (6 test cases — legal, out-of-scope, adversarial)
 
 | Metric | Score |
