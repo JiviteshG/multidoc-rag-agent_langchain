@@ -1,152 +1,189 @@
-# Multi-Doc RAG Agent with LangChain 📚🤖
+# Multi-Doc RAG Agent 📚🤖
 
-A Retrieval-Augmented Generation (RAG) conversational application that allows you to upload and chat with multiple PDF documents simultaneously. Built using LangChain and Streamlit.
+A production-grade conversational RAG agent for querying multiple PDF documents. Built with LangChain, Streamlit, and FastAPI — featuring two-stage retrieval with reranking, token-by-token streaming, structured output, LLM-based guardrails, and a full CI/CD pipeline.
 
-## 🌟 Features
-- **Multi-PDF Processing:** Upload multiple PDF documents at once and query across all of them.
-- **Conversational Memory:** The agent remembers the context of the conversation, allowing for natural, continuous follow-up questions.
-- **RAG Architecture:** Leverages semantic search and LLMs to fetch the most relevant text chunks from your documents to generate accurate answers.
-- **Interactive Web UI:** Features a clean and responsive chat interface powered by Streamlit.
+![CI/CD](https://github.com/JiviteshG/multidoc-rag-agent_langchain/actions/workflows/ci.yml/badge.svg)
 
-## 🛠️ Technologies Used
-- **[LangChain](https://python.langchain.com/):** Core framework for orchestrating LLMs, vector stores, and conversational chains.
-- **[Streamlit](https://streamlit.io/):** For building the front-end chat interface.
-- **Embeddings & Vector Store:** Used to convert text into vector embeddings and store them for fast semantic search (typically FAISS or ChromaDB).
-- **LLM Integration:** Compatible with models like OpenAI GPT or HuggingFace alternatives.
-- **[Ragas](https://www.ragas.io/):** Automatic metrics that helps you understand the performance and robustness of your LLM application.
-- **[DeepEval](https://deepeval.com/):** DeepEval enables teams to build reliable evaluation pipelines to test any AI system.
-  
-## 🚀 Getting Started
+---
+
+## Features
+
+- **Two-Stage Retrieval:** ChromaDB vector search (k=20) → FlashRank cross-encoder reranker (top 5). Bi-encoder for recall, cross-encoder for precision.
+- **Streaming Responses:** Token-by-token streaming via `chain.stream()`. Spinner covers retrieval latency; `st.write_stream()` renders tokens as they arrive.
+- **Structured Output:** `RAGResponse(answer, sources)` Pydantic model via `llm.with_structured_output()` — typed, validated, no regex parsing.
+- **FastAPI Endpoint:** `POST /query` returns `RAGResponse` JSON. Async `ainvoke()`, lifespan startup, Swagger UI at `/docs`.
+- **LLM Guardrail:** Zero-temperature binary classifier (`LegalGuardrail`) blocks out-of-scope queries before the RAG pipeline is triggered.
+- **Evaluation Suite:** Ragas (faithfulness, answer relevancy), DeepEval (14 synthetic test cases), and custom guardrail tests — all with CSV reports.
+- **CI/CD Pipeline:** GitHub Actions — guardrail tests gate Docker build/push to GHCR. SHA + latest tagging, registry layer caching.
+- **Conversational Memory:** `RunnableWithMessageHistory` persists chat context across turns. Full history auto-saved after each streamed response.
+
+---
+
+## Architecture
+
+```
+PDF Upload → Chunking (1000 tokens, 200 overlap)
+          → OpenAI Embeddings → ChromaDB (persisted)
+
+Query → LegalGuardrail (LLM binary classifier)
+      → ChromaDB k=20 (vector similarity)
+      → FlashRank cross-encoder → top 5 chunks
+      → LangChain LCEL chain → GPT-4o
+      → Streamlit: token-by-token streaming
+      → FastAPI /query: RAGResponse JSON
+```
+
+---
+
+## Tech Stack
+
+| Layer | Tools |
+| :--- | :--- |
+| **LLM & Orchestration** | LangChain 1.4.0, LangSmith, OpenAI GPT-4o |
+| **Retrieval** | ChromaDB, FlashRank (ms-marco-MultiBERT-L-12), OpenAI Embeddings |
+| **UI** | Streamlit |
+| **API** | FastAPI, Uvicorn |
+| **Evaluation** | Ragas, DeepEval, Guardrails AI |
+| **CI/CD** | GitHub Actions, Docker, GHCR |
+
+---
+
+## Getting Started
 
 ### Prerequisites
-- Python 3.8 or higher
-- An API Key for your chosen LLM (e.g., OpenAI API Key or HuggingFace Token)
+- Python 3.13
+- OpenAI API Key
+- LangChain API Key (for LangSmith tracing)
 
 ### Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/JiviteshG/multidoc-rag-agent_langchain.git](https://github.com/JiviteshG/multidoc-rag-agent_langchain.git)
-   cd multidoc-rag-agent_langchain
-    ```
-   
-2. **Create and activate a virtual environment (recommended):**
-   ```bash
-   python -m venv venv
-   # On macOS/Linux:
-   source venv/bin/activate  
-   # On Windows:
-   venv\Scripts\activate
-   ```
+```bash
+git clone https://github.com/JiviteshG/multidoc-rag-agent_langchain.git
+cd multidoc-rag-agent_langchain
+python -m venv venv
+venv\Scripts\activate      # Windows
+# source venv/bin/activate  # macOS/Linux
+pip install -r requirements.txt
+```
 
-3. **Install the dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-   
-4. **Set up Environment Variables:**
-Create a .env file in the root of the project and securely store your API keys:
-   ```
-   Code snippet
-   OPENAI_API_KEY=your_openai_api_key_here
-   # HUGGINGFACEHUB_API_TOKEN=your_huggingface_token_here (if applicable)
-   ```
-  
-**💻 Usage**
-1. Start the application by running:
-   ```bash
-   streamlit run app.py
+### Environment Variables
 
-2. The application will launch in your default web browser.
+Create a `.env` file in the project root:
 
-3. Use the sidebar to Upload your PDF documents.
+```
+OPENAI_API_KEY=your_openai_api_key
+LANGCHAIN_API_KEY=your_langchain_api_key
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_PROJECT=multidoc-rag-agent
+```
 
-4. Click on Process to chunk the text and build the vector database.
+### Run the Streamlit App
 
-5. Once processing is complete, use the text input at the bottom to start asking questions about your documents!
+```bash
+streamlit run app.py
+```
 
-📁 Repository Structure
+1. Upload PDF documents via the sidebar.
+2. Click **Process** to chunk and embed into ChromaDB.
+3. Ask questions in the chat input — answers stream token-by-token.
 
-📦 multidoc-rag-agent_langchain/
+### Run the FastAPI Endpoint
 
-├── app.py               # Main Streamlit application and logic
+```bash
+uvicorn api:app --reload --port 8000
+```
 
-├── htmlTemplates.py     # HTML/CSS UI components for user & bot messages
+- `POST /query` — submit a question, receive `{"answer": "...", "sources": ["file.pdf, Page N"]}`
+- `GET /health` — liveness check
+- `GET /docs` — Swagger UI with full schema
 
-├── requirements.txt     # List of project dependencies
+```bash
+curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What rights are protected under the Canadian Bill of Rights?"}'
+```
 
-├── README.md            # Project documentation
+### Docker
 
-├── .gitignore           # Ignored files for version control
+```bash
+docker build -t multidoc-rag-agent .
+docker-compose up
+```
 
-└── .python-version      # Specifies the Python version used
+Or pull the latest image from GHCR:
 
+```bash
+docker pull ghcr.io/jiviteshg/multidoc-rag-agent:latest
+```
+
+---
+
+## Repository Structure
+
+```
+multidoc-rag-agent_langchain/
+├── app.py                        # Streamlit app + RAG chain + streaming logic
+├── api.py                        # FastAPI /query endpoint
+├── htmlTemplates.py              # Chat UI HTML/CSS templates
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .github/workflows/ci.yml      # CI/CD pipeline
+├── logic_guards/
+│   └── input_guards.py           # LegalGuardrail — LLM binary classifier
 ├── evals/
+│   ├── run_guardrail_tests.py    # Guardrail test suite (runs in CI)
+│   ├── run_ragas_eval.py         # Ragas evaluation (manual)
+│   ├── run_deepeval_evals.py     # DeepEval evaluation (manual)
+│   └── results/                  # CSV reports
+└── chroma_db/                    # Persisted vector store
+```
 
-│   ├── eval_dataset.py       # Your golden questions
+---
 
-│   ├── run_ragas_eval.py     # The execution Ragas script
+## CI/CD Pipeline
 
-│   └── ragas_report_v1.csv   # The results of evals 
+GitHub Actions workflow (`.github/workflows/ci.yml`):
 
-## 📊 Performance Evaluation
-The system was evaluated using the **Ragas** framework against a "Golden Dataset" of legal questions derived from the Canadian Constitution and Bill of Rights.
+1. **Guardrail Tests** — runs on every push and pull request. Installs dependencies, runs `evals/run_guardrail_tests.py`, uploads CSV report as artifact.
+2. **Docker Build & Push** — runs only on `main` after tests pass. Builds image, pushes to GHCR with `sha-<commit>` and `latest` tags, uses registry layer caching.
+
+Secrets required: `OPENAI_API_KEY`, `LANGCHAIN_API_KEY` (GITHUB_TOKEN auto-provided).
+
+---
+
+## Evaluation Results
+
+### Ragas (faithfulness + answer relevancy)
+
+Evaluated against a golden dataset of Canadian Bill of Rights questions.
+
+| Metric | Score |
+| :--- | :--- |
+| **Faithfulness** | 1.00 |
+| **Answer Relevancy** | 0.96 |
 
 ![RAG Evaluation Metrics](evals/eval_results_plot.png)
 
-### Key Results:
-- **Faithfulness (1.00):** The model demonstrated zero hallucinations, with all answers being 100% supported by the source documents.
-- **Answer Relevancy (0.96):** The model provides highly relevant answers that directly address the user's query.
+### DeepEval (14 synthetic test cases)
 
-## 📊 Evaluation Results
+| Metric | Score |
+| :--- | :--- |
+| **Faithfulness** | 0.98 |
+| **Answer Relevancy** | 1.00 |
 
-We evaluate the RAG agent using **DeepEval** to ensure high-fidelity responses and prevent hallucinations. The agent was tested against 14 synthetic test cases derived from the *Canadian Bill of Rights*.
-
-### Performance Metrics
 ![DeepEval Results](evals/deepeval_evaluation_results_plot_total.png)
 
-| Metric | Score | Definition |
-| :--- | :--- | :--- |
-| **Faithfulness** | 0.98 | Measures how much of the answer is derived strictly from the PDF. |
-| **Answer Relevancy** | 1.00 | Measures how well the agent actually addressed the user's query. |
+### Guardrail (6 test cases — legal, out-of-scope, adversarial)
 
-Detailed breakdown can be found in [evals/deepeval_evaluation_results_plot.png](evals/deepeval_evaluation_results_plot.png).
-Detailed breakdown can be found in [evals/deepeval_results_gpt 5.4.csv](evals/deepeval_results_gpt 5.4.csv).
+| Metric | Score |
+| :--- | :--- |
+| **Accuracy** | 100% |
+| **Legal Query Recall** | 100% |
+| **Out-of-Scope Filtering** | 100% |
 
-## ⚖️ Evaluation & Safety Guardrails
+---
 
-To ensure this Legal Assistant only answers Canadian Law queries, I implemented a **Logic-Based Input Guardrail** and a **DeepEval** testing suite.
+## License
 
-### Performance Summary
-| Metric | Score | Status |
-| :--- | :--- | :--- |
-| **Input Guardrail Accuracy** | 50.00% | 🚧 In Development |
-| **Legal Query Recall** | 100% | ✅ Passing |
-| **Out-of-Scope Filtering** | 0% | ❌ Needs Tuning |
-
-### Evaluation Methodology
-I run a custom evaluation suite (`evals/run_guardrail_tests.py`) that tests the agent against:
-1. **Legal Queries**: Valid Canadian Law questions.
-2. **Out-of-Scope**: Non-legal topics (e.g., cooking, finance).
-3. **Adversarial**: Jailbreak attempts.
-
-### 📊 Guardrail Performance Report
-I implemented a **zero-temperature binary classifier** to prevent the agent from hallucinating legal advice on non-legal topics.
-
-**Latest Benchmark Results:**
-- **Accuracy:** 100.00%
-- **Samples Tested:** 6 (Legal, Sourdough, Finance, Jailbreaks)
-- **Framework:** Custom Logic-Based Guardrail + DeepEval-ready architecture.
-
-> "The guardrail ensures the RAG pipeline is only triggered for valid Canadian Statutory queries, saving LLM tokens and preventing out-of-scope hallucinations."
-> 
-### Latest Test Results
-Current logs show the guardrail is successfully allowing legal queries but is currently too permissive with "Out of Scope" topics. 
-
-**Next Steps:** Tuning the system prompt in `logic_guards/input_guards.py` to improve the F1-score of the classification logic.
-
-### 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
-
-### 📜 License
-This project is open-source and available under the MIT License.
+MIT
