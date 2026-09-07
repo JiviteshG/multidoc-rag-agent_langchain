@@ -35,6 +35,11 @@ jobs:
       - name: Install dependencies
         run: pip install --no-cache-dir -r requirements.txt
 
+      - name: Run unit tests
+        env:
+          PYTHONPATH: .
+        run: pytest tests/ -v
+
       - name: Run guardrail tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

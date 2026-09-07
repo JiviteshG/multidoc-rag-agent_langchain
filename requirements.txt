@@ -24,3 +24,6 @@ flashrank
 fastapi
 uvicorn[standard]
 langchain-classic
+pytest
+pytest-asyncio
+httpx
